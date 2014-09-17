@@ -6,10 +6,8 @@ import weka.classifiers.Classifier;
 import weka.classifiers.lazy.IBk;
 import weka.core.Instances;
 
-import com.gatech.cs7641.assignment1.datasetLoader.DatasetLoader;
-import com.gatech.cs7641.assignment1.datasetLoader.DefaultDatasetLoader;
+import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
-import com.gatech.cs7641.assignment1.datasetPartitioner.IncrementalPartitioner;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 import com.gatech.cs7641.assignment1.trainingRunner.BaseTrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
@@ -19,8 +17,9 @@ public class kNN3TrainingRunner extends
 
 	public kNN3TrainingRunner(int randSeed,
 			List<DatasetPreProcessor> preProcessors,
+			AttributeSelector attrSelector,
 			DatasetPartitioner partitioner, Instances originalSet, Instances testSet) {
-		super(randSeed, preProcessors, partitioner, originalSet, testSet);
+		super(randSeed, preProcessors, attrSelector, partitioner, originalSet, testSet);
 		
 	}
 

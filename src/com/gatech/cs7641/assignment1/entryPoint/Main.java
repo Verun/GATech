@@ -1,17 +1,18 @@
 package com.gatech.cs7641.assignment1.entryPoint;
 
 import java.util.Arrays;
+import java.util.List;
 
-import weka.classifiers.Evaluation;
 import weka.core.Instances;
 
+import com.gatech.cs7641.assignment1.attributeSelector.PassthroughAttributeSelector;
 import com.gatech.cs7641.assignment1.datasetLoader.DatasetLoader;
 import com.gatech.cs7641.assignment1.datasetLoader.DefaultDatasetLoader;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
 import com.gatech.cs7641.assignment1.datasetPartitioner.IncrementalPartitioner;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.PassthroughPreProcessor;
-import com.gatech.cs7641.assignment1.trainingRunner.EvaluationHolder;
+import com.gatech.cs7641.assignment1.trainingRunner.SingleRunResult;
 import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.kNN.kNN3TrainingRunner;
 
@@ -31,22 +32,22 @@ public class Main {
 		//partitioner
 		DatasetPartitioner partitioner = new IncrementalPartitioner(1, 5);
 		
-		TrainingRunner trainingRunner = new kNN3TrainingRunner(1, Arrays.asList(preProcessor), partitioner, initial, initial);
+		TrainingRunner trainingRunner = new kNN3TrainingRunner(1, Arrays.asList(preProcessor), new PassthroughAttributeSelector(), partitioner, initial, initial);
 		
-		EvaluationHolder evalHolder = trainingRunner.runTraining();
+		List<SingleRunResult> evalHolder = trainingRunner.runTraining();
 		
+
 		System.out.println("Now printing out eval on training sets...");
-		
-		for (Evaluation eval : evalHolder.getTrainingEvaluations()) {
-			System.out.println(eval.toSummaryString());
-			System.out.println();
+		for (SingleRunResult srr : evalHolder) {
+				System.out.println(srr.getTrainingEvaluation().toSummaryString());
+				System.out.println();
 		}
 		
 		System.out.println("************************************");
 		System.out.println("Now printing out eval on test set...");
 		
-		for (Evaluation eval : evalHolder.getTestEvaluations()) {
-			System.out.println(eval.toSummaryString());
+		for (SingleRunResult srr : evalHolder) {
+			System.out.println(srr.getTestEvaluation().toSummaryString());
 			System.out.println();
 		}
 		

@@ -8,6 +8,8 @@ import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 
+import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
+import com.gatech.cs7641.assignment1.attributeSelector.InstancesWithSelectedIndices;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 
@@ -18,23 +20,24 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 	private final Instances originalSet;
 	private final Instances testSet;
 	private final int randSeed;
+	private final AttributeSelector attrSelector;
 	
-	public BaseTrainingRunner(int randSeed, List<DatasetPreProcessor> preProcessors, DatasetPartitioner partitioner, Instances originalSet, Instances testSet) {
+	public BaseTrainingRunner(int randSeed, List<DatasetPreProcessor> preProcessors, AttributeSelector attrSelector, DatasetPartitioner partitioner, Instances originalSet, Instances testSet) {
 		super();
 		this.preProcessors = preProcessors;
 		this.partitioner = partitioner;
 		this.originalSet = originalSet;
 		this.testSet = testSet;
 		this.randSeed = randSeed;
+		this.attrSelector = attrSelector;
 	}
 
 	@Override
-	public EvaluationHolder runTraining() {
+	public List<SingleRunResult> runTraining() {
 
 		Instances next = originalSet;
 		
-		next.randomize(new Random(randSeed));
-		
+		next.randomize(new Random(randSeed));	
 		
 			for (DatasetPreProcessor preProcessor : preProcessors) {
 				
@@ -42,39 +45,41 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 				
 			}
 			
-			Iterable<Instances> trainingSets = partitioner.partitionDataset(next);
+			List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 			
-			Classifier classifier = null;
+			for (InstancesWithSelectedIndices attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(next)) {
 			
-			List<Evaluation> trainingEvaluations = new ArrayList<Evaluation>();
-			List<Evaluation> testEvaluations = new ArrayList<Evaluation>();
-			
-			for (Instances trainingInstances : trainingSets) {
+				Iterable<Instances> trainingSets = partitioner.partitionDataset(attributeSelectedInstances.getAttributeSelectedInstances());
 				
-				System.out.println("Now running on training set size of: " + trainingInstances.numInstances());
-				
-				try {
-					classifier = buildClassifier(trainingInstances);
+				Classifier classifier = null;
+			
+				for (Instances trainingInstances : trainingSets) {
 					
-					//get the error rates on training data
-					Evaluation trainingEval = new Evaluation(trainingInstances);
-					trainingEval.evaluateModel(classifier, trainingInstances);
-					trainingEvaluations.add(trainingEval);
+					System.out.println("Now running on training set size of: " + trainingInstances.numInstances());
 					
-					//error rates on testing data
-					Evaluation testingEval = new Evaluation(trainingInstances);
-					testingEval.evaluateModel(classifier, testSet);
-					testEvaluations.add(testingEval);
+					try {
+						long start = System.currentTimeMillis();
+						classifier = buildClassifier(trainingInstances);
+						long timeToTrain = System.currentTimeMillis() - start;
+						
+						//get the error rates on training data
+						Evaluation trainingEval = new Evaluation(trainingInstances);
+						trainingEval.evaluateModel(classifier, trainingInstances);
+										
+						//error rates on testing data
+						Evaluation testingEval = new Evaluation(trainingInstances);
+						testingEval.evaluateModel(classifier, testSet);
+						
+						toReturn.add(new SingleRunResult(trainingEval, testingEval, timeToTrain));
+						
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
-					
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
-				
 			}
-			
-			return new EvaluationHolder(trainingEvaluations, testEvaluations);
+			return toReturn;
 		
 	}
 

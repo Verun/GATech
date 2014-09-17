@@ -1,10 +1,8 @@
 package com.gatech.cs7641.assignment1.trainingRunner;
 
-import java.util.Map;
-
-import weka.core.Instances;
+import java.util.List;
 
 public interface TrainingRunner {
 
-	EvaluationHolder runTraining();
+	List<SingleRunResult> runTraining();
 }
