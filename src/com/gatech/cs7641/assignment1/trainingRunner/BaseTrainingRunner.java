@@ -45,6 +45,18 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 				
 			}
 			
+			/*
+			 * for each instance (identified by eval, search, and selected indices) <-- collapse so that if the same indices are selected, only the first one runs)
+	-partition into training sets
+	-get classifiers (each identified by some string)
+		for each training set, run training and test on test set, gather stats
+		
+	
+instance (identified by eval, search, selected indices), classifier identifiers, training set size, training set stats..., test set stats
+			 * 
+			 * 
+			 */
+			
 			List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 			
 			for (InstancesWithSelectedIndices attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(next)) {
