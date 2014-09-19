@@ -1,17 +1,23 @@
 package com.gatech.cs7641.assignment1.trainingRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 
+import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelectedInstances;
 import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
-import com.gatech.cs7641.assignment1.attributeSelector.InstancesWithSelectedIndices;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public abstract class BaseTrainingRunner implements TrainingRunner {
 
@@ -59,7 +65,7 @@ instance (identified by eval, search, selected indices), classifier identifiers,
 			
 			List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 			
-			for (InstancesWithSelectedIndices attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(next)) {
+			for (AttributeSelectedInstances attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(next)) {
 			
 				Iterable<Instances> trainingSets = partitioner.partitionDataset(attributeSelectedInstances.getAttributeSelectedInstances());
 				
@@ -68,21 +74,31 @@ instance (identified by eval, search, selected indices), classifier identifiers,
 				for (Instances trainingInstances : trainingSets) {
 					
 					System.out.println("Now running on training set size of: " + trainingInstances.numInstances());
+					System.out.println("It has " + trainingInstances.numAttributes() + " num attributes; original had " + next.numAttributes() + " attrs ");
 					
 					try {
-						long start = System.currentTimeMillis();
-						classifier = buildClassifier(trainingInstances);
-						long timeToTrain = System.currentTimeMillis() - start;
+						for (ClassifierWithDescriptor cwd : buildClassifiers(trainingInstances)) {
 						
-						//get the error rates on training data
-						Evaluation trainingEval = new Evaluation(trainingInstances);
-						trainingEval.evaluateModel(classifier, trainingInstances);
-										
-						//error rates on testing data
-						Evaluation testingEval = new Evaluation(trainingInstances);
-						testingEval.evaluateModel(classifier, testSet);
-						
-						toReturn.add(new SingleRunResult(trainingEval, testingEval, timeToTrain));
+							classifier = cwd.getClassifier();
+							
+							//get the error rates on training data
+							Evaluation trainingEval = new Evaluation(trainingInstances);
+							trainingEval.evaluateModel(classifier, trainingInstances);
+											
+							//error rates on testing data
+							//make sure to only pick those attributes from the testSet that the trainingSet had.
+							
+							Evaluation testingEval = new Evaluation(trainingInstances);
+							testingEval.evaluateModel(classifier, getPrunedInstances(testSet, attributeSelectedInstances.getAttributeIndicesKeptFromOriginalInstance()));
+							
+							//attributeSelectedInstances = same size as original training set, but with possibly
+							//a subset of the attributes.
+							//trainingEval - training evaluation results on a partition of the attribute selected instances.
+							//testingEval - testing evaluation results on the original test set.
+							//classifierWithDescriptor - info on the classifier used. use this to get to the training set and training time for the
+							//classifier.
+							toReturn.add(new SingleRunResult(attributeSelectedInstances, trainingEval, testingEval, cwd));
+						}
 						
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -95,6 +111,34 @@ instance (identified by eval, search, selected indices), classifier identifiers,
 		
 	}
 
-	protected abstract Classifier buildClassifier(Instances trainingInstances);
+	private Instances getPrunedInstances(Instances original, int[] attributeIndicesToKeep) {
+		
+		Instances toReturn = new Instances(original, 0, original.numInstances());
+		
+		Set<Integer> allAttributeIndices = new HashSet<Integer>();
+		for (int x = 0; x < original.numAttributes(); x++)
+			allAttributeIndices.add(x);
+		
+		Set<Integer> indicesToKeep = new HashSet<Integer>();
+		for (int y = 0; y < attributeIndicesToKeep.length; y++)
+			indicesToKeep.add(attributeIndicesToKeep[y]);
+		
+		Set<Integer> attributeIndicesToRemove = Sets.difference(allAttributeIndices, indicesToKeep);
+		
+		Integer[] asArray = attributeIndicesToRemove.toArray(new Integer[0]);
+		Arrays.sort(asArray);
+		
+		int numPositionsToShiftDownwards = 0;
+		for (Integer i : asArray) {
+			int properIndexToDelete = i.intValue() - numPositionsToShiftDownwards;
+			//System.out.println("toKeep was before: " + i + " but is now " + properIndexToDelete);
+			toReturn.deleteAttributeAt(properIndexToDelete);
+			numPositionsToShiftDownwards++;
+		}
+		
+		return toReturn;
+	}
+	
+	protected abstract Iterable<ClassifierWithDescriptor> buildClassifiers(final Instances trainingInstances);
 	
 }

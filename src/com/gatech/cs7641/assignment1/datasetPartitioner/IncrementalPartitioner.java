@@ -19,10 +19,10 @@ public class IncrementalPartitioner implements DatasetPartitioner {
 	@Override
 	public Iterable<Instances> partitionDataset(final Instances instances) {
 		
-		Random rn = new Random(randomNumSeed);
+		//Random rn = new Random(randomNumSeed);
 		
-		//step 1: randomize
-		instances.randomize(rn);
+		////step 1: randomize
+		//instances.randomize(rn);
 		
 		final int numInstances = instances.numInstances();
 		

@@ -2,18 +2,23 @@ package com.gatech.cs7641.assignment1.trainingRunner;
 
 import weka.classifiers.Evaluation;
 
+import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelectedInstances;
+
 public class SingleRunResult {
 
 	private final Evaluation trainingEvaluation;
 	private final Evaluation testEvaluation;
-	private final long numMillisecondsToBuildClassifier;
+	private final ClassifierWithDescriptor cwd;
+	private final AttributeSelectedInstances asi;
 	
-	public SingleRunResult(Evaluation trainingEvaluation,
-			Evaluation testEvaluation, long numMillisecondsToBuildClassifier) {
+	public SingleRunResult(AttributeSelectedInstances asi, Evaluation trainingEvaluation,
+			Evaluation testEvaluation, ClassifierWithDescriptor classifierWithDescriptor) {
 		super();
+		this.asi = asi;
 		this.trainingEvaluation = trainingEvaluation;
 		this.testEvaluation = testEvaluation;
-		this.numMillisecondsToBuildClassifier = numMillisecondsToBuildClassifier;
+		this.cwd = classifierWithDescriptor;
+
 	}
 
 	public Evaluation getTrainingEvaluation() {
@@ -22,13 +27,14 @@ public class SingleRunResult {
 
 	public Evaluation getTestEvaluation() {
 		return testEvaluation;
+	}	
+	
+	public ClassifierWithDescriptor getClassifierWithDescriptor() {
+		return cwd;
 	}
-
-	public long getNumMillisecondsToBuildClassifier() {
-		return numMillisecondsToBuildClassifier;
+	
+	public AttributeSelectedInstances getAttributeSelectedInstances() {
+		return asi;
 	}
-	
-	
-	
 	
 }

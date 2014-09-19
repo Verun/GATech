@@ -1,8 +1,10 @@
 package com.gatech.cs7641.assignment1.attributeSelector;
 
+import java.util.Arrays;
+
 import weka.core.Instances;
 
-public class InstancesWithSelectedIndices {
+public class AttributeSelectedInstances {
 
 	private final Instances attributeSelectedInstances;
 	private final int[] attributeIndicesKeptFromOriginalInstance;
@@ -10,7 +12,7 @@ public class InstancesWithSelectedIndices {
 	private final String evaluator;
 	private final String searcher;
 	
-	public InstancesWithSelectedIndices(Instances attributeSelectedInstances,
+	public AttributeSelectedInstances(Instances attributeSelectedInstances,
 			int[] attributeIndicesKeptFromOriginalInstance,
 			Instances originalInstances,
 			String evaluator,
@@ -31,15 +33,15 @@ public class InstancesWithSelectedIndices {
 		return attributeIndicesKeptFromOriginalInstance;
 	}
 
-	public Instances getOriginalInstances() {
+	public Instances getInstancesBeforeAttributeSelection() {
 		return originalInstances;
 	}
 	
-	public String getEvaluator() {
+	public String getEvaluatorDescriptorString() {
 		return evaluator;
 	}
 	
-	public String getSearcher() {
+	public String getSearcherDescriptorString() {
 		return searcher;
 	}
 }
