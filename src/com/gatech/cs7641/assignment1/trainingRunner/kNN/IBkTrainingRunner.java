@@ -21,7 +21,7 @@ public class IBkTrainingRunner extends BaseTrainingRunner {
 			List<DatasetPreProcessor> preProcessors,
 			AttributeSelector attrSelector, DatasetPartitioner partitioner,
 			Instances trainingSet, Instances testSet) {
-		super(randSeed, preProcessors, attrSelector, partitioner, trainingSet, testSet);
+		super(attrSelector, partitioner, trainingSet, testSet);
 		// TODO Auto-generated constructor stub
 	}
 

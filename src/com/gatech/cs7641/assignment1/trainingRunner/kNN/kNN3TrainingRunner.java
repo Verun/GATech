@@ -21,7 +21,7 @@ public class kNN3TrainingRunner extends
 			List<DatasetPreProcessor> preProcessors,
 			AttributeSelector attrSelector,
 			DatasetPartitioner partitioner, Instances originalSet, Instances testSet) {
-		super(randSeed, preProcessors, attrSelector, partitioner, originalSet, testSet);
+		super(attrSelector, partitioner, originalSet, testSet);
 		
 	}
 

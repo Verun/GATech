@@ -1,13 +1,13 @@
 package com.gatech.cs7641.assignment1.trainingRunner;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,54 +19,25 @@ import weka.core.Instances;
 import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelectedInstances;
 import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
-import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 import com.google.common.collect.Sets;
 
 public abstract class BaseTrainingRunner implements TrainingRunner {
 
-	private final List<DatasetPreProcessor> preProcessors;
 	private final DatasetPartitioner partitioner;
 	private final Instances trainingSet;
 	private final Instances testSet;
-	private final int randSeed;
 	private final AttributeSelector attrSelector;
 	
-	public BaseTrainingRunner(int randSeed, List<DatasetPreProcessor> preProcessors, AttributeSelector attrSelector, DatasetPartitioner partitioner, Instances trainingSet, Instances testSet) {
+	public BaseTrainingRunner(AttributeSelector attrSelector, DatasetPartitioner partitioner, Instances trainingSet, Instances testSet) {
 		super();
-		this.preProcessors = preProcessors;
 		this.partitioner = partitioner;
 		this.trainingSet = trainingSet;
 		this.testSet = testSet;
-		this.randSeed = randSeed;
 		this.attrSelector = attrSelector;
 	}
 
 	@Override
 	public List<SingleRunResult> runTraining() {
-
-		Instances next = trainingSet;
-		
-		next.randomize(new Random(randSeed));	
-		
-			for (DatasetPreProcessor preProcessor : preProcessors) {
-				
-				next = preProcessor.preProcessDataset(next); 
-				
-			}
-			
-			final Instances finalTrainingSet = next;
-			
-			/*
-			 * for each instance (identified by eval, search, and selected indices) <-- collapse so that if the same indices are selected, only the first one runs)
-	-partition into training sets
-	-get classifiers (each identified by some string)
-		for each training set, run training and test on test set, gather stats
-		
-	
-instance (identified by eval, search, selected indices), classifier identifiers, training set size, training set stats..., test set stats
-			 * 
-			 * 
-			 */
 			
 			List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 	
@@ -74,20 +45,24 @@ instance (identified by eval, search, selected indices), classifier identifiers,
 			
 			List<Future<SingleRunResult>> listOfFutures = new ArrayList<Future<SingleRunResult>>();
 			
-			for (final AttributeSelectedInstances attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(finalTrainingSet)) {
+			Date start = new Date();
+			System.out.println("Started at: " + DateFormat.getDateTimeInstance(
+		            DateFormat.LONG, DateFormat.LONG).format(start));
+			
+			for (final AttributeSelectedInstances attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(trainingSet)) {
 			
 				Iterable<Instances> trainingSets = partitioner.partitionDataset(attributeSelectedInstances.getAttributeSelectedInstances());
 				
 				final int[] selectedIndices = attributeSelectedInstances.getAttributeIndicesKeptFromOriginalInstance();
 				
-				final Instances trainingSetToEvaluateModelOn = getPrunedInstances(finalTrainingSet, selectedIndices);
+				final Instances trainingSetToEvaluateModelOn = getPrunedInstances(trainingSet, selectedIndices);
 				
 				final Instances testingSetToEvaluateModelOn = getPrunedInstances(testSet, selectedIndices);
 				
 				for (final Instances trainingInstances : trainingSets) {
 					
 					System.out.println("Now running on training set size of: " + trainingInstances.numInstances());
-					System.out.println("It has " + trainingInstances.numAttributes() + " attrs; original had " + finalTrainingSet.numAttributes() + " attrs ");
+					System.out.println("It has " + trainingInstances.numAttributes() + " attrs; original had " + trainingSet.numAttributes() + " attrs ");
 					
 					try {
 
@@ -143,6 +118,10 @@ instance (identified by eval, search, selected indices), classifier identifiers,
 				}
 			}
 			
+			
+			Date end = new Date();
+			System.out.println("Ended at: " + DateFormat.getDateTimeInstance(
+		            DateFormat.LONG, DateFormat.LONG).format(end));
 			
 			return toReturn;
 		

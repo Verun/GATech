@@ -24,14 +24,11 @@ import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.PassthroughPreProcessor;
 import com.gatech.cs7641.assignment1.trainingRunner.SingleRunResult;
 import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
-import com.gatech.cs7641.assignment1.trainingRunner.J48.J48TrainingRunner;
+import com.gatech.cs7641.assignment1.trainingRunner.boostedJ48.BoostedJ48TrainingRunner;
 import com.google.common.collect.Iterables;
 
 public class Main {
 
-	private final static int RAND_SEED = 1;
-	private final static double HOLDOUT_PERCENTAGE = 33.33;
-	
 	public static void main(String[] args) throws Exception {
 
 		//load data:
@@ -51,8 +48,9 @@ public class Main {
 			DatasetPartitioner partitioner = new IncrementalPartitioner(3);
 			
 			//TrainingRunner trainingRunner = new IBkTrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
-			TrainingRunner trainingRunner = new J48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
-
+			//TrainingRunner trainingRunner = new J48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
+			TrainingRunner trainingRunner = new BoostedJ48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
+			
 			List<SingleRunResult> evalHolder = trainingRunner.runTraining();
 	
 			ResultsDumper rd = new ResultsDumper();
@@ -109,16 +107,16 @@ public class Main {
 		
 		Resample resample = new Resample(); //use the supervised version to maintain the class distribution
 		resample.setNoReplacement(true);
-		resample.setRandomSeed(RAND_SEED);
-		resample.setSampleSizePercent(100 - HOLDOUT_PERCENTAGE);
+		resample.setRandomSeed(GlobalConstants.RAND_SEED);
+		resample.setSampleSizePercent(100 - GlobalConstants.HOLDOUT_PERCENTAGE);
 		resample.setInputFormat(processed);
 		
 		Instances adultTraining = Filter.useFilter(processed, resample);
 		
 		resample = new Resample(); //use the supervised version to maintain the class distribution
 		resample.setNoReplacement(true);
-		resample.setRandomSeed(RAND_SEED);
-		resample.setSampleSizePercent(HOLDOUT_PERCENTAGE);
+		resample.setRandomSeed(GlobalConstants.RAND_SEED);
+		resample.setSampleSizePercent(GlobalConstants.HOLDOUT_PERCENTAGE);
 		resample.setInputFormat(processed);
 		
 		Instances adultTesting = Filter.useFilter(processed, resample);
