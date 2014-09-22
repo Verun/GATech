@@ -20,12 +20,14 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 
 	private final Iterable<ASEvaluation> evaluators;
 	private final Iterable<ASSearch> searchers;
+	private final boolean returnAllAttributesTheFirstTime;
 	
 	public ConfigurableAttributeSelector(Iterable<ASEvaluation> evaluators,
-			Iterable<ASSearch> searchers) {
+			Iterable<ASSearch> searchers, boolean returnAllAttributesTheFirstTime) {
 		super();
 		this.evaluators = evaluators;
 		this.searchers = searchers;
+		this.returnAllAttributesTheFirstTime = returnAllAttributesTheFirstTime;
 	}
 
 	public Iterable<AttributeSelectedInstances> getAttributeSelectedInstances(
@@ -43,10 +45,17 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 					private int evalIndex = 0;
 					private int searchIndex = 0;
 					private final Set<String> returned = new HashSet<String>();
+					private boolean returnedAllAttributes;
 					
 					@Override
 					protected AttributeSelectedInstances computeNext() {
 
+						if (returnAllAttributesTheFirstTime && !returnedAllAttributes) {
+							returnedAllAttributes = true;
+							return new AttributeSelectedInstances(original, getArrayOfAttributeIndices(original), original, "N/A", "N/A");
+						}
+						
+						
 						//keep searching for a unique set of attributes we haven't previously considered
 						while (true) {
 							try {					
@@ -119,6 +128,17 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 						}
 						
 						return sbr.toString();
+					}
+					
+					private int[] getArrayOfAttributeIndices(Instances instances) {
+						int numAttributes = instances.numAttributes();
+						
+						int[] toReturn = new int[numAttributes];
+						for (int x = 0; x < numAttributes; x++) {
+							toReturn[x] = x;
+						}
+						
+						return toReturn;
 					}
 					
 				};

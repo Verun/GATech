@@ -1,7 +1,5 @@
 package com.gatech.cs7641.assignment1.attributeSelector;
 
-import java.util.Arrays;
-
 import weka.core.Instances;
 
 public class AttributeSelectedInstances {

@@ -20,10 +20,10 @@ public class ResultsDumper {
 			//print info about the relation
 			AttributeSelectedInstances asi = srr.getAttributeSelectedInstances();
 			
-			String relName = asi.getAttributeSelectedInstances().relationName();
+			String relName = asi.getAttributeSelectedInstances().relationName().substring(0,asi.getAttributeSelectedInstances().relationName().indexOf("-"));
 			String evaluator = asi.getEvaluatorDescriptorString();
 			String searcher = asi.getSearcherDescriptorString();
-			String keptIndices = join(asi.getAttributeIndicesKeptFromOriginalInstance());
+			String keptIndices = asi.getAttributeIndicesKeptFromOriginalInstance().length == asi.getInstancesBeforeAttributeSelection().numAttributes() ? "all" : join(asi.getAttributeIndicesKeptFromOriginalInstance());
 			
 			sbr.append(relName);
 			sbr.append(TAB);
@@ -48,11 +48,21 @@ public class ResultsDumper {
 			sbr.append(TAB);
 			
 			//training stats (error rates etc)
+			sbr.append(srr.getTrainingEvaluation().pctCorrect());
+			sbr.append(TAB);
+			sbr.append(srr.getTrainingEvaluation().pctIncorrect());
+			sbr.append(TAB);
+			sbr.append(srr.getTrainingEvaluation().pctUnclassified());
+			sbr.append(TAB);
 			
 			//test stats (error rates etc)
-			
-			
-			
+			sbr.append(srr.getTestEvaluation().pctCorrect());
+			sbr.append(TAB);
+			sbr.append(srr.getTestEvaluation().pctIncorrect());
+			sbr.append(TAB);
+			sbr.append(srr.getTestEvaluation().pctUnclassified());
+			sbr.append(TAB);		
+
 			sbr.append(NEWLINE);
 		}
 		
