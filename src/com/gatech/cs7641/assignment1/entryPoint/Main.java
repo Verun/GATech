@@ -9,12 +9,15 @@ import weka.attributeSelection.BestFirst;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
 import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSink;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
 import weka.filters.supervised.instance.Resample;
+import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.NominalToBinary;
 import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.NumericToNominal;
 
 import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
 import com.gatech.cs7641.assignment1.attributeSelector.ConfigurableAttributeSelector;
@@ -29,6 +32,9 @@ import com.google.common.collect.Iterables;
 
 public class Main {
 
+	private static final String ADULT_INCOME_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/adult.data.all.ed_num_removed.arff";
+	private static final String CRIME_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/communities.data.arff";
+	
 	public static void main(String[] args) throws Exception {
 
 		//load data:
@@ -39,7 +45,7 @@ public class Main {
 			Instances training = trainingAndTestInstances.getTrainingInstances();
 			Instances testing = trainingAndTestInstances.getTestInstances();
 			
-			System.out.println("Training set size: " + training.numInstances() + ", testing set size: " + testing.numInstances());
+			System.out.println("Rel name: " + training.relationName() + ", Training set size: " + training.numInstances() + ", testing set size: " + testing.numInstances());
 			
 			//pass through preprocessor
 			DatasetPreProcessor preProcessor = new PassthroughPreProcessor();
@@ -54,9 +60,9 @@ public class Main {
 			List<SingleRunResult> evalHolder = trainingRunner.runTraining();
 	
 			ResultsDumper rd = new ResultsDumper();
-			String allResults = rd.getResults(evalHolder);
+			rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/" + "crime" + ".out");
 	
-			System.out.println(allResults);
+			//System.out.println(allResults);
 		
 		}
 		
@@ -85,12 +91,12 @@ public class Main {
 		
 	private static List<TrainingAndTestInstances> getInstances() throws Exception {
 		//adult income data
-		final String adultIncomeData = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/adult.data.all.ed_num_removed.arff";
+		final String adultIncomeData = ADULT_INCOME_DATA;
 		
 		Instances beforeProcessing = DataSource.read(adultIncomeData);
 		beforeProcessing.setClassIndex(beforeProcessing.numAttributes() - 1);
 		
-		System.out.println("Before processing, num instances: " + beforeProcessing.numInstances());
+		//System.out.println("Before processing, num instances: " + beforeProcessing.numInstances());
 
 		//normalize numeric values, convert nominal attributes to binary
 		Normalize normalize = new Normalize();
@@ -113,16 +119,77 @@ public class Main {
 		
 		Instances adultTraining = Filter.useFilter(processed, resample);
 		
+		//DataSink.write("/Users/vrahimtoola/Desktop/adultTrain.arff", adultTraining);
+		
 		resample = new Resample(); //use the supervised version to maintain the class distribution
 		resample.setNoReplacement(true);
 		resample.setRandomSeed(GlobalConstants.RAND_SEED);
-		resample.setSampleSizePercent(GlobalConstants.HOLDOUT_PERCENTAGE);
+		resample.setSampleSizePercent(100 - GlobalConstants.HOLDOUT_PERCENTAGE);
+		resample.setInvertSelection(true);
 		resample.setInputFormat(processed);
 		
 		Instances adultTesting = Filter.useFilter(processed, resample);
 		
+		//////////////////////////////////
+		final String crimeData = CRIME_DATA;
+		
+		beforeProcessing = DataSource.read(crimeData);
+		beforeProcessing.setClassIndex(beforeProcessing.numAttributes() - 1);
+		
+		//delete county, community name, fold attributes
+		beforeProcessing.deleteAttributeAt(1);
+		beforeProcessing.deleteAttributeAt(2);
+		beforeProcessing.deleteAttributeAt(2);
+	
+		//discretize class values
+		Discretize discretize = new Discretize();
+		discretize.setAttributeIndices("last");
+		discretize.setIgnoreClass(true);
+		discretize.setBins(8);
+		discretize.setUseEqualFrequency(true);
+		
+		//convert state attribute (index 0) to nominal
+		NumericToNominal numericToNominal = new NumericToNominal();
+		numericToNominal.setAttributeIndicesArray(new int[] {0});
+		
+		//normalize all numeric attributes
+		normalize = new Normalize();
+		
+		mf = new MultiFilter();
+		mf.setFilters(new Filter[] {discretize, numericToNominal, normalize});
+		mf.setInputFormat(beforeProcessing);
+		
+		processed = Filter.useFilter(beforeProcessing, mf);
+		
+		//System.out.println("class index for crime is: " + processed.classIndex());
+		
+		//DataSink.write("/Users/vrahimtoola/Desktop/crimeAll.arff", processed);
+		
+		//
+			
+		resample = new Resample(); //use the supervised version to maintain the class distribution
+		resample.setNoReplacement(true);
+		resample.setRandomSeed(GlobalConstants.RAND_SEED);
+		resample.setSampleSizePercent(100 - GlobalConstants.HOLDOUT_PERCENTAGE);
+		resample.setInputFormat(processed);
+		
+		Instances crimeTraining = Filter.useFilter(processed, resample);
+		
+		//DataSink.write("/Users/vrahimtoola/Desktop/adultTrain.arff", adultTraining);
+		
+		resample = new Resample(); //use the supervised version to maintain the class distribution
+		resample.setNoReplacement(true);
+		resample.setRandomSeed(GlobalConstants.RAND_SEED);
+		resample.setSampleSizePercent(100 - GlobalConstants.HOLDOUT_PERCENTAGE);
+		resample.setInvertSelection(true);
+		resample.setInputFormat(processed);
+		
+		Instances crimeTesting = Filter.useFilter(processed, resample);
+		
 		return Arrays.asList(new TrainingAndTestInstances[] {
-				new TrainingAndTestInstances(adultTraining, adultTesting)
+				new TrainingAndTestInstances(crimeTraining, crimeTesting),
+				//new TrainingAndTestInstances(adultTraining, adultTesting),
+
 				
 		});
 		

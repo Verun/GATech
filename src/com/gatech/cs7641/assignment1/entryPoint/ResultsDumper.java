@@ -1,21 +1,41 @@
 package com.gatech.cs7641.assignment1.entryPoint;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelectedInstances;
 import com.gatech.cs7641.assignment1.trainingRunner.ClassifierWithDescriptor;
 import com.gatech.cs7641.assignment1.trainingRunner.SingleRunResult;
 
 public class ResultsDumper {
 
-	public String getResults(Iterable<SingleRunResult> results) {
+	public void dumpResultsToFile(Iterable<SingleRunResult> results, String fileName) throws FileNotFoundException, IOException {
+		
+		final File outFile = new File(fileName);
+		if (outFile.exists())
+			outFile.delete();
 		
 		final String TAB = "\t";
 		final String NEWLINE = "\n";
 		
 		StringBuilder sbr = new StringBuilder();
 		
+		try (
+				
+				FileOutputStream fos = new FileOutputStream(outFile, false);
+				OutputStreamWriter srw = new OutputStreamWriter(fos);
+				BufferedWriter brw = new BufferedWriter(srw);
+				
+				) {
 		
 		
 		for (SingleRunResult srr : results) {
+			
+			sbr.setLength(0);
 			
 			//print info about the relation
 			AttributeSelectedInstances asi = srr.getAttributeSelectedInstances();
@@ -63,10 +83,13 @@ public class ResultsDumper {
 			sbr.append(srr.getTestEvaluation().pctUnclassified());
 			sbr.append(TAB);		
 
-			sbr.append(NEWLINE);
+			brw.write(sbr.toString());
+			brw.newLine();
 		}
 		
-		return sbr.toString();
+		}
+		
+		//return sbr.toString();
 	}
 	
 	private String join(int[] arr) {
