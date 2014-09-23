@@ -9,6 +9,7 @@ import weka.attributeSelection.BestFirst;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
 import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSink;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
@@ -22,8 +23,6 @@ import com.gatech.cs7641.assignment1.attributeSelector.AttributeSelector;
 import com.gatech.cs7641.assignment1.attributeSelector.ConfigurableAttributeSelector;
 import com.gatech.cs7641.assignment1.datasetPartitioner.DatasetPartitioner;
 import com.gatech.cs7641.assignment1.datasetPartitioner.IncrementalPartitioner;
-import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
-import com.gatech.cs7641.assignment1.datasetPreProcessor.PassthroughPreProcessor;
 import com.gatech.cs7641.assignment1.trainingRunner.SingleRunResult;
 import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.J48.J48TrainingRunner;
@@ -58,15 +57,15 @@ public class Main {
 					10);
 
 			final TrainingRunner[] trainingRunners = new TrainingRunner[] {
-//					new J48TrainingRunner(
-//							getConfigurableAttributeSelector(), partitioner,
-//							training, testing),
-//					new BoostedJ48TrainingRunner(
-//							getConfigurableAttributeSelector(), partitioner,
-//							training, testing),
-//					new IBkTrainingRunner(
-//							getConfigurableAttributeSelector(), partitioner,
-//							training, testing),
+					new J48TrainingRunner(
+							getConfigurableAttributeSelector(), partitioner,
+							training, testing),
+					new BoostedJ48TrainingRunner(
+							getConfigurableAttributeSelector(), partitioner,
+							training, testing),
+					new IBkTrainingRunner(
+							getConfigurableAttributeSelector(), partitioner,
+							training, testing),
 					new MultiLayerPerceptronTrainingRunner(
 							getConfigurableAttributeSelector(), partitioner,
 							training, testing)
@@ -132,6 +131,9 @@ public class Main {
 
 		Instances processed = Filter.useFilter(beforeProcessing, mf);
 
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultAll.arff",
+//		 processed);
+		
 		Resample resample = new Resample(); // use the supervised version to
 											// maintain the class distribution
 		resample.setNoReplacement(true);
@@ -141,8 +143,8 @@ public class Main {
 
 		final Instances adultTraining = Filter.useFilter(processed, resample);
 
-		// DataSink.write("/Users/vrahimtoola/Desktop/adultTrain.arff",
-		// adultTraining);
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultTrain.arff",
+//		 adultTraining);
 
 		resample = new Resample(); // use the supervised version to maintain the
 									// class distribution
@@ -154,16 +156,20 @@ public class Main {
 
 		final Instances adultTesting = Filter.useFilter(processed, resample);
 
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultTest.arff",
+//		 adultTesting);
+		
 		// ////////////////////////////////
 		final String crimeData = CRIME_DATA;
 
 		beforeProcessing = DataSource.read(crimeData);
 		beforeProcessing.setClassIndex(beforeProcessing.numAttributes() - 1);
 
-		// delete county, community name, fold attributes
+		// delete county, community, community name, fold attributes
 		beforeProcessing.deleteAttributeAt(1);
-		beforeProcessing.deleteAttributeAt(2);
-		beforeProcessing.deleteAttributeAt(2);
+		beforeProcessing.deleteAttributeAt(1);
+		beforeProcessing.deleteAttributeAt(1);
+		beforeProcessing.deleteAttributeAt(1);
 
 		// discretize class values
 		final Discretize discretize = new Discretize();
@@ -188,8 +194,8 @@ public class Main {
 		// System.out.println("class index for crime is: " +
 		// processed.classIndex());
 
-		// DataSink.write("/Users/vrahimtoola/Desktop/crimeAll.arff",
-		// processed);
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/crimeAll.arff",
+//		 processed);
 
 		//
 
@@ -202,8 +208,8 @@ public class Main {
 
 		final Instances crimeTraining = Filter.useFilter(processed, resample);
 
-		// DataSink.write("/Users/vrahimtoola/Desktop/adultTrain.arff",
-		// adultTraining);
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/crimeTrain.arff",
+//		 crimeTraining);
 
 		resample = new Resample(); // use the supervised version to maintain the
 									// class distribution
@@ -215,11 +221,14 @@ public class Main {
 
 		final Instances crimeTesting = Filter.useFilter(processed, resample);
 
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/crimeTest.arff",
+//		 crimeTesting);
+		
 		return Arrays
 				.asList(new TrainingAndTestInstances[] { new TrainingAndTestInstances(
 						"crime", crimeTraining, crimeTesting),
-				// new TrainingAndTestInstances("adult", adultTraining,
-				// adultTesting),
+				 new TrainingAndTestInstances("adult", adultTraining,
+				 adultTesting),
 
 				});
 

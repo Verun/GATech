@@ -43,7 +43,9 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 
 		final List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 
-		final ExecutorService execService = Executors.newFixedThreadPool(8);
+		System.out.println("Threadpool size: " + Runtime.getRuntime().availableProcessors());
+		
+		final ExecutorService execService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 		final List<Future<SingleRunResult>> listOfFutures = new ArrayList<Future<SingleRunResult>>();
 
