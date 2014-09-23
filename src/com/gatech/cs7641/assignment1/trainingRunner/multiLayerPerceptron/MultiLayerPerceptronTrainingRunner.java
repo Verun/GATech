@@ -47,8 +47,8 @@ public class MultiLayerPerceptronTrainingRunner extends BaseTrainingRunner {
 						//instance initializer
 						float[] learningRates = new float[] {0.1f, 0.3f, 0.5f};			
 						float[] momentums = new float[] {0.1f, 0.2f, 0.3f};
-						String[] hiddenLayers = new String[] {"a,b"};
-						int[] trainingEpochs = new int[] {100, 200};
+						String[] hiddenLayers = new String[] {"a","b"};
+						int[] trainingEpochs = new int[] {100, 200, 500};
 						int[] validationSetSizes = new int[] {10, 20};
 						
 						for (float l : learningRates)
