@@ -34,10 +34,12 @@ public class J48TrainingRunner extends BaseTrainingRunner {
 
 				return new AbstractIterator<ClassifierWithDescriptor>() {
 
-					private int indexIntoMinNumObj = 0;
-					private int indexIntoSubtreeRaising = 0;
+					private int indexIntoMinNumObjArray = 0;
+					private int indexIntoSubtreeRaisingArray = 0;
+					private int indexIntoConfidenceFactorsArray = 0;
 					
-					private final int[] minNumObjArray = new int[] {3, 10, 25};
+					private final float[] confidenceFactorsArray = new float[] {0.01f, 0.10f, 0.25f};
+					private final int[] minNumObjArray = new int[] {3, 5, 10, 25};
 					private final boolean[] subTreeRaisingArray = new boolean[] {true, false};
 					
 					private boolean returnedUnPruned = false;
@@ -56,24 +58,31 @@ public class J48TrainingRunner extends BaseTrainingRunner {
 						
 							j48.setUnpruned(false);
 							
-							if (indexIntoSubtreeRaising >= subTreeRaisingArray.length) {
-								indexIntoSubtreeRaising = 0;
-								indexIntoMinNumObj++;
+							if (indexIntoSubtreeRaisingArray >= subTreeRaisingArray.length) {
+								indexIntoSubtreeRaisingArray = 0;
+								indexIntoConfidenceFactorsArray++;
 							}
 							
-							if (indexIntoMinNumObj >= minNumObjArray.length) {
+							if (indexIntoConfidenceFactorsArray >= confidenceFactorsArray.length) {
+								indexIntoConfidenceFactorsArray = 0;
+								indexIntoMinNumObjArray++;
+							}
+							
+							if (indexIntoMinNumObjArray >= minNumObjArray.length) {
 								return endOfData();
 							}
 								
-							boolean subTreeRaising = subTreeRaisingArray[indexIntoSubtreeRaising];
-							indexIntoSubtreeRaising++;
+							boolean subTreeRaising = subTreeRaisingArray[indexIntoSubtreeRaisingArray];
+							int minNumObj = minNumObjArray[indexIntoMinNumObjArray];
+							float confidenceFactor = confidenceFactorsArray[indexIntoConfidenceFactorsArray];
 							
-							int minNumObj = minNumObjArray[indexIntoMinNumObj];
-							
+							indexIntoSubtreeRaisingArray++;
+
 							j48.setSubtreeRaising(subTreeRaising);
 							j48.setMinNumObj(minNumObj);
+							j48.setConfidenceFactor(confidenceFactor);
 							
-							descriptor="subTreeRaising=" + subTreeRaising + ";minNumObj=" + minNumObj;
+							descriptor="str=" + subTreeRaising + ";minNumObj=" + minNumObj + "confFactor=" + confidenceFactor;
 						}
 						
 							long trainingTime;

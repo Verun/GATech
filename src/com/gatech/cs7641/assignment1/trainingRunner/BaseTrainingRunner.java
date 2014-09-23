@@ -24,14 +24,14 @@ import com.google.common.collect.Sets;
 public abstract class BaseTrainingRunner implements TrainingRunner {
 
 	private final DatasetPartitioner partitioner;
-	private final Instances trainingSet;
+	private final Instances originalTrainingSet;
 	private final Instances testSet;
 	private final AttributeSelector attrSelector;
 	
-	public BaseTrainingRunner(AttributeSelector attrSelector, DatasetPartitioner partitioner, Instances trainingSet, Instances testSet) {
+	public BaseTrainingRunner(AttributeSelector attrSelector, DatasetPartitioner partitioner, Instances originalTrainingSet, Instances testSet) {
 		super();
 		this.partitioner = partitioner;
-		this.trainingSet = trainingSet;
+		this.originalTrainingSet = originalTrainingSet;
 		this.testSet = testSet;
 		this.attrSelector = attrSelector;
 	}
@@ -41,7 +41,7 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 			
 			List<SingleRunResult> toReturn = new ArrayList<SingleRunResult>();
 	
-			ExecutorService execService = Executors.newFixedThreadPool(7);
+			ExecutorService execService = Executors.newFixedThreadPool(8);
 			
 			List<Future<SingleRunResult>> listOfFutures = new ArrayList<Future<SingleRunResult>>();
 			
@@ -49,20 +49,20 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 			System.out.println("Started at: " + DateFormat.getDateTimeInstance(
 		            DateFormat.LONG, DateFormat.LONG).format(start));
 			
-			for (final AttributeSelectedInstances attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(trainingSet)) {
+			for (final AttributeSelectedInstances attributeSelectedInstances : attrSelector.getAttributeSelectedInstances(originalTrainingSet)) {
 			
 				Iterable<Instances> trainingSets = partitioner.partitionDataset(attributeSelectedInstances.getAttributeSelectedInstances());
 				
 				final int[] selectedIndices = attributeSelectedInstances.getAttributeIndicesKeptFromOriginalInstance();
 				
-				final Instances trainingSetToEvaluateModelOn = getPrunedInstances(trainingSet, selectedIndices);
+				final Instances trainingSetToEvaluateModelOn = attributeSelectedInstances.getAttributeSelectedInstances();
 				
 				final Instances testingSetToEvaluateModelOn = getPrunedInstances(testSet, selectedIndices);
 				
 				for (final Instances trainingInstances : trainingSets) {
 					
 					System.out.println("Now running on training set size of: " + trainingInstances.numInstances());
-					System.out.println("It has " + trainingInstances.numAttributes() + " attrs; original had " + trainingSet.numAttributes() + " attrs ");
+					System.out.println("It has " + trainingInstances.numAttributes() + " attrs; original had " + originalTrainingSet.numAttributes() + " attrs ");
 					
 					try {
 
@@ -91,7 +91,7 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 									
 									long end = System.currentTimeMillis();
 									
-									System.out.println("Classifier " + cwd.getDescriptor() + " took " + (end-start) + "ms");
+									//System.out.println("Classifier " + cwd.getDescriptor() + " took " + (end-start) + "ms");
 									
 									return new SingleRunResult(attributeSelectedInstances, trainingEval, testingEval, cwd);
 								}
@@ -148,6 +148,7 @@ public abstract class BaseTrainingRunner implements TrainingRunner {
 		for (Integer i : asArray) {
 			int properIndexToDelete = i.intValue() - numPositionsToShiftDownwards;
 			//System.out.println("toKeep was before: " + i + " but is now " + properIndexToDelete);
+			System.out.println("Now deleting index: " + properIndexToDelete + "; original was: " + i.intValue() + " and numDeletes before it was: " + numPositionsToShiftDownwards);
 			toReturn.deleteAttributeAt(properIndexToDelete);
 			numPositionsToShiftDownwards++;
 		}

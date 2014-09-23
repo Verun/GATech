@@ -1,6 +1,5 @@
 package com.gatech.cs7641.assignment1.attributeSelector;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,9 +8,8 @@ import java.util.Set;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ASSearch;
-import weka.core.Instances;
-import weka.filters.Filter;
 import weka.attributeSelection.AttributeSelection;
+import weka.core.Instances;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
@@ -78,13 +76,13 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 								AttributeSelection attrSelection = new AttributeSelection();
 								attrSelection.setEvaluator(evalToUse);
 								attrSelection.setSearch(searcherToUse);
-
+								
 								attrSelection.SelectAttributes(original);
 								
 								String hashedSelectedIndices = hashSelectedIndices(attrSelection.selectedAttributes());
 								
 								if (returned.contains(hashedSelectedIndices)) {
-									System.out.println("Ignoring search: " +  searcherToUse.getClass().getName());
+									System.out.println("Ignoring search: " +  searcherToUse.getClass().getName() + " because indices have been explored before: " + hashedSelectedIndices);
 									continue;
 								} else
 									returned.add(hashedSelectedIndices);

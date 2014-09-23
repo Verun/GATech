@@ -9,7 +9,6 @@ import weka.attributeSelection.BestFirst;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
 import weka.core.Instances;
-import weka.core.converters.ConverterUtils.DataSink;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
@@ -27,7 +26,7 @@ import com.gatech.cs7641.assignment1.datasetPreProcessor.DatasetPreProcessor;
 import com.gatech.cs7641.assignment1.datasetPreProcessor.PassthroughPreProcessor;
 import com.gatech.cs7641.assignment1.trainingRunner.SingleRunResult;
 import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
-import com.gatech.cs7641.assignment1.trainingRunner.boostedJ48.BoostedJ48TrainingRunner;
+import com.gatech.cs7641.assignment1.trainingRunner.J48.J48TrainingRunner;
 import com.google.common.collect.Iterables;
 
 public class Main {
@@ -51,16 +50,16 @@ public class Main {
 			DatasetPreProcessor preProcessor = new PassthroughPreProcessor();
 			
 			//partitioner
-			DatasetPartitioner partitioner = new IncrementalPartitioner(3);
+			DatasetPartitioner partitioner = new IncrementalPartitioner(10);
 			
 			//TrainingRunner trainingRunner = new IBkTrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
-			//TrainingRunner trainingRunner = new J48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
-			TrainingRunner trainingRunner = new BoostedJ48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
+			TrainingRunner trainingRunner = new J48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
+			//TrainingRunner trainingRunner = new BoostedJ48TrainingRunner(1, Arrays.asList(preProcessor), getConfigurableAttributeSelector(), partitioner, training, testing);
 			
 			List<SingleRunResult> evalHolder = trainingRunner.runTraining();
 	
 			ResultsDumper rd = new ResultsDumper();
-			rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/" + "crime" + ".out");
+			rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/" + "crime" + ".txt");
 	
 			//System.out.println(allResults);
 		

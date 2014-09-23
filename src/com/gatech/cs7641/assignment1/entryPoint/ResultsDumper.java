@@ -41,8 +41,8 @@ public class ResultsDumper {
 			AttributeSelectedInstances asi = srr.getAttributeSelectedInstances();
 			
 			String relName = asi.getAttributeSelectedInstances().relationName().substring(0,asi.getAttributeSelectedInstances().relationName().indexOf("-"));
-			String evaluator = asi.getEvaluatorDescriptorString();
-			String searcher = asi.getSearcherDescriptorString();
+			String evaluator = asi.getEvaluatorDescriptor();
+			String searcher = asi.getSearcherDescriptor();
 			String keptIndices = asi.getAttributeIndicesKeptFromOriginalInstance().length == asi.getInstancesBeforeAttributeSelection().numAttributes() ? "all" : join(asi.getAttributeIndicesKeptFromOriginalInstance());
 			
 			sbr.append(relName);
@@ -63,11 +63,15 @@ public class ResultsDumper {
 			sbr.append(cwd.getInstancesTrainedOn().numInstances());
 			sbr.append(TAB);
 			
-			//time it took to train
-			sbr.append(cwd.getTimeItTookToTrain());
+			//time it took to train (in seconds)
+			sbr.append(cwd.getTimeItTookToTrain() / 1000.00d);
 			sbr.append(TAB);
 			
 			//training stats (error rates etc)
+			sbr.append(srr.getTrainingEvaluation().weightedPrecision());
+			sbr.append(TAB);
+			sbr.append(srr.getTrainingEvaluation().weightedRecall());
+			sbr.append(TAB);
 			sbr.append(srr.getTrainingEvaluation().pctCorrect());
 			sbr.append(TAB);
 			sbr.append(srr.getTrainingEvaluation().pctIncorrect());
@@ -76,6 +80,10 @@ public class ResultsDumper {
 			sbr.append(TAB);
 			
 			//test stats (error rates etc)
+			sbr.append(srr.getTestEvaluation().weightedPrecision());
+			sbr.append(TAB);
+			sbr.append(srr.getTestEvaluation().weightedRecall());
+			sbr.append(TAB);
 			sbr.append(srr.getTestEvaluation().pctCorrect());
 			sbr.append(TAB);
 			sbr.append(srr.getTestEvaluation().pctIncorrect());

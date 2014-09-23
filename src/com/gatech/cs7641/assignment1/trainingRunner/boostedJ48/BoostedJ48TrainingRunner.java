@@ -35,12 +35,14 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 
 				return new AbstractIterator<ClassifierWithDescriptor>() {
 
-					private int indexIntoMinNumObj = 0;
-					private int indexIntoSubtreeRaising = 0;
+					private int indexIntoMinNumObjArray = 0;
+					private int indexIntoSubtreeRaisingArray = 0;
+					private int indexIntoConfidenceFactorsArray = 0;
 					private int indexIntoNumIterationsArray = 0;
 					
-					private final int[] numIterationsArray = new int[] {1,2,3}; //too many iterations makes it too slow
-					private final int[] minNumObjArray = new int[] {25, 50, 100};
+					private final int[] numIterationsArray = new int[] {1,3,5,20}; //too many iterations makes it too slow
+					private final int[] minNumObjArray = new int[] {5,10,25, 50, 100};
+					private final double[] confidenceFactorsArray = new double[] {0.25, 0.10, 0.01};
 					private final boolean[] subTreeRaisingArray = new boolean[] {true, false};
 					
 					private boolean returnedUnPruned = false;
@@ -68,20 +70,23 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 							
 							boolean subTreeRaisingFlag = getNextSubTreeRaisingFlag();
 							int minNumObj = getNextMinNumObj();
+							double confidenceFactor = getNextConfidenceFactor();
 							int numIterations = getNextNumIterations();
 							
 							j48.setSubtreeRaising(subTreeRaisingFlag);
 							j48.setMinNumObj(minNumObj);
+							j48.setConfidenceFactor((float)confidenceFactor);
 							adaBoost.setNumIterations(numIterations);
 							
-							indexIntoSubtreeRaising++;
+							indexIntoSubtreeRaisingArray++;
 							
 							if (subTreeRaisingFlag == subTreeRaisingArray[subTreeRaisingArray.length - 1] &&
 								minNumObj == minNumObjArray[minNumObjArray.length - 1] &&
-								numIterations == numIterationsArray[numIterationsArray.length - 1])
+								numIterations == numIterationsArray[numIterationsArray.length - 1] &&
+								Double.compare(confidenceFactor, confidenceFactorsArray[confidenceFactorsArray.length - 1]) == 0)
 								allClassifiersReturned = true;
 							
-							descriptor="adaBoost (j48 pruned);subTreeRaising=" + subTreeRaisingFlag + ";minNumObj=" + minNumObj + ";numIterations=" + numIterations;
+							descriptor="adaBoost (j48 pruned);str=" + subTreeRaisingFlag + ";minNumObj=" + minNumObj + ";numIter=" + numIterations + ";conf=" + confidenceFactor;
 						}
 						
 						adaBoost.setClassifier(j48);
@@ -110,20 +115,30 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 						
 					}
 
-					private int getNextMinNumObj() {
-						if (indexIntoMinNumObj >= minNumObjArray.length) {
-							indexIntoMinNumObj = 0;
+					private double getNextConfidenceFactor() {
+						if (indexIntoConfidenceFactorsArray >= confidenceFactorsArray.length) {
+							indexIntoConfidenceFactorsArray = 0;
 							indexIntoNumIterationsArray++;
 						}
-						return minNumObjArray[indexIntoMinNumObj];
+						
+						return confidenceFactorsArray[indexIntoConfidenceFactorsArray];
+							
+					}
+					
+					private int getNextMinNumObj() {
+						if (indexIntoMinNumObjArray >= minNumObjArray.length) {
+							indexIntoMinNumObjArray = 0;
+							indexIntoConfidenceFactorsArray++;
+						}
+						return minNumObjArray[indexIntoMinNumObjArray];
 					}
 
 					private boolean getNextSubTreeRaisingFlag() {
-						if (indexIntoSubtreeRaising >= subTreeRaisingArray.length) {
-							indexIntoSubtreeRaising = 0;
-							indexIntoMinNumObj++;
+						if (indexIntoSubtreeRaisingArray >= subTreeRaisingArray.length) {
+							indexIntoSubtreeRaisingArray = 0;
+							indexIntoMinNumObjArray++;
 						}
-						return subTreeRaisingArray[indexIntoSubtreeRaising];
+						return subTreeRaisingArray[indexIntoSubtreeRaisingArray];
 						
 					}
 					
