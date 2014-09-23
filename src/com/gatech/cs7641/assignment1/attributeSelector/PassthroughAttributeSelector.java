@@ -10,21 +10,23 @@ public class PassthroughAttributeSelector implements AttributeSelector {
 
 	@Override
 	public Iterable<AttributeSelectedInstances> getAttributeSelectedInstances(
-			Instances original) {
-		
-		AttributeSelectedInstances toReturn = new AttributeSelectedInstances(original, getArrayOfAttributeIndices(original), original, "N/A", "N/A");
-		
+			final Instances original) {
+
+		final AttributeSelectedInstances toReturn = new AttributeSelectedInstances(
+				original, getArrayOfAttributeIndices(original), original,
+				"N/A", "N/A");
+
 		return Iterables.unmodifiableIterable(Arrays.asList(toReturn));
 	}
-	
-	private int[] getArrayOfAttributeIndices(Instances instances) {
-		int numAttributes = instances.numAttributes();
-		
-		int[] toReturn = new int[numAttributes];
+
+	private int[] getArrayOfAttributeIndices(final Instances instances) {
+		final int numAttributes = instances.numAttributes();
+
+		final int[] toReturn = new int[numAttributes];
 		for (int x = 0; x < numAttributes; x++) {
 			toReturn[x] = x;
 		}
-		
+
 		return toReturn;
 	}
 

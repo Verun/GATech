@@ -19,18 +19,21 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 	private final Iterable<ASEvaluation> evaluators;
 	private final Iterable<ASSearch> searchers;
 	private final boolean returnAllAttributesTheFirstTime;
-	
-	public ConfigurableAttributeSelector(Iterable<ASEvaluation> evaluators,
-			Iterable<ASSearch> searchers, boolean returnAllAttributesTheFirstTime) {
+
+	public ConfigurableAttributeSelector(
+			final Iterable<ASEvaluation> evaluators,
+			final Iterable<ASSearch> searchers,
+			final boolean returnAllAttributesTheFirstTime) {
 		super();
 		this.evaluators = evaluators;
 		this.searchers = searchers;
 		this.returnAllAttributesTheFirstTime = returnAllAttributesTheFirstTime;
 	}
 
+	@Override
 	public Iterable<AttributeSelectedInstances> getAttributeSelectedInstances(
 			final Instances original) {
-		
+
 		return new Iterable<AttributeSelectedInstances>() {
 
 			@Override
@@ -38,113 +41,142 @@ public class ConfigurableAttributeSelector implements AttributeSelector {
 
 				return new AbstractIterator<AttributeSelectedInstances>() {
 
-					private final List<ASEvaluation> evals = Lists.newArrayList(evaluators); 
-					private final List<ASSearch> srchs = Lists.newArrayList(searchers);
+					private final List<ASEvaluation> evals = Lists
+							.newArrayList(evaluators);
+					private final List<ASSearch> srchs = Lists
+							.newArrayList(searchers);
 					private int evalIndex = 0;
 					private int searchIndex = 0;
 					private final Set<String> returned = new HashSet<String>();
 					private boolean returnedAllAttributes;
-					
+
 					@Override
 					protected AttributeSelectedInstances computeNext() {
 
-						if (returnAllAttributesTheFirstTime && !returnedAllAttributes) {
+						if (returnAllAttributesTheFirstTime
+								&& !returnedAllAttributes) {
 							returnedAllAttributes = true;
-							return new AttributeSelectedInstances(original, getArrayOfAttributeIndices(original), original, "N/A", "N/A");
+							return new AttributeSelectedInstances(original,
+									getArrayOfAttributeIndices(original),
+									original, "N/A", "N/A");
 						}
-						
-						
-						//keep searching for a unique set of attributes we haven't previously considered
+
+						// keep searching for a unique set of attributes we
+						// haven't previously considered
 						while (true) {
-							try {					
+							try {
 								if (searchIndex >= srchs.size()) {
 									searchIndex = 0;
 									evalIndex++;
 								}
-								
+
 								if (evalIndex >= evals.size())
 									return endOfData();
-								
-								ASEvaluation evalToUse = evals.get(evalIndex);
-								ASSearch searcherToUse = srchs.get(searchIndex);
-								
+
+								final ASEvaluation evalToUse = evals
+										.get(evalIndex);
+								final ASSearch searcherToUse = srchs
+										.get(searchIndex);
+
 								searchIndex++;
-								
-								//Instances copy = new Instances(original, 0, original.numInstances());
-								//copy.setClassIndex(original.classIndex());
-								
-								AttributeSelection attrSelection = new AttributeSelection();
+
+								// Instances copy = new Instances(original, 0,
+								// original.numInstances());
+								// copy.setClassIndex(original.classIndex());
+
+								final AttributeSelection attrSelection = new AttributeSelection();
 								attrSelection.setEvaluator(evalToUse);
 								attrSelection.setSearch(searcherToUse);
-								
+
 								attrSelection.SelectAttributes(original);
-								
-								String hashedSelectedIndices = hashSelectedIndices(attrSelection.selectedAttributes());
-								
+
+								final String hashedSelectedIndices = hashSelectedIndices(attrSelection
+										.selectedAttributes());
+
 								if (returned.contains(hashedSelectedIndices)) {
-									System.out.println("Ignoring search: " +  searcherToUse.getClass().getName() + " because indices have been explored before: " + hashedSelectedIndices);
+									System.out
+											.println("Ignoring search: "
+													+ searcherToUse.getClass()
+															.getName()
+													+ " because indices have been explored before: "
+													+ hashedSelectedIndices);
 									continue;
 								} else
 									returned.add(hashedSelectedIndices);
-								
-//								attrSelection.setInputFormat(original);
-								
-//								Instances attributeSelected = Filter.useFilter(original, attrSelection);
-//
-//								if (attributeSelected.numAttributes() == original.numAttributes())
-//									continue; //no attributes selected
-//								
-//								int[] selectedIndicesFromOriginal = getSelectedIndicesFromOriginal(original, attributeSelected);	
-//								
-								System.out.println("hashed: " + hashedSelectedIndices);
-//								
-								Instances reduced = attrSelection.reduceDimensionality(original);
-								
-								System.out.println("index of class attr in reduced: " + reduced.classIndex());
-								
-								return new AttributeSelectedInstances(reduced, attrSelection.selectedAttributes(), original, evalToUse.getClass().getName(), searcherToUse.getClass().getName());
-								
-							} catch (Exception e) {
+
+								// attrSelection.setInputFormat(original);
+
+								// Instances attributeSelected =
+								// Filter.useFilter(original, attrSelection);
+								//
+								// if (attributeSelected.numAttributes() ==
+								// original.numAttributes())
+								// continue; //no attributes selected
+								//
+								// int[] selectedIndicesFromOriginal =
+								// getSelectedIndicesFromOriginal(original,
+								// attributeSelected);
+								//
+								System.out.println("hashed: "
+										+ hashedSelectedIndices);
+								//
+								final Instances reduced = attrSelection
+										.reduceDimensionality(original);
+
+								System.out
+										.println("index of class attr in reduced: "
+												+ reduced.classIndex());
+
+								return new AttributeSelectedInstances(reduced,
+										attrSelection.selectedAttributes(),
+										original, evalToUse.getClass()
+												.getName(), searcherToUse
+												.getClass().getName());
+
+							} catch (final Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								
+
 								throw new RuntimeException(e);
 							}
 
-						}//end while
+						}// end while
 					}
-					
-					private String hashSelectedIndices(int[] selectedIndices) {
-						int[] copy = Arrays.copyOf(selectedIndices, selectedIndices.length);
+
+					private String hashSelectedIndices(
+							final int[] selectedIndices) {
+						final int[] copy = Arrays.copyOf(selectedIndices,
+								selectedIndices.length);
 						Arrays.sort(copy);
-						
-						StringBuilder sbr = new StringBuilder();
-						
-						for (int i : copy) {
+
+						final StringBuilder sbr = new StringBuilder();
+
+						for (final int i : copy) {
 							sbr.append(i);
 							sbr.append("_");
 						}
-						
+
 						return sbr.toString();
 					}
-					
-					private int[] getArrayOfAttributeIndices(Instances instances) {
-						int numAttributes = instances.numAttributes();
-						
-						int[] toReturn = new int[numAttributes];
+
+					private int[] getArrayOfAttributeIndices(
+							final Instances instances) {
+						final int numAttributes = instances.numAttributes();
+
+						final int[] toReturn = new int[numAttributes];
 						for (int x = 0; x < numAttributes; x++) {
 							toReturn[x] = x;
 						}
-						
+
 						return toReturn;
 					}
-					
+
 				};
-				
+
 			}
-			
+
 		};
-		
+
 	}
 
 }

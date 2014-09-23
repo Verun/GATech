@@ -9,12 +9,12 @@ public class AttributeSelectedInstances {
 	private final Instances originalInstances;
 	private final String evaluatorDescriptor;
 	private final String searcherDescriptor;
-	
-	public AttributeSelectedInstances(Instances attributeSelectedInstances,
-			int[] attributeIndicesKeptFromOriginalInstance,
-			Instances originalInstances,
-			String evaluatorDescriptor,
-			String searcherDescriptor) {
+
+	public AttributeSelectedInstances(
+			final Instances attributeSelectedInstances,
+			final int[] attributeIndicesKeptFromOriginalInstance,
+			final Instances originalInstances,
+			final String evaluatorDescriptor, final String searcherDescriptor) {
 		super();
 		this.attributeSelectedInstances = attributeSelectedInstances;
 		this.attributeIndicesKeptFromOriginalInstance = attributeIndicesKeptFromOriginalInstance;
@@ -34,11 +34,11 @@ public class AttributeSelectedInstances {
 	public Instances getInstancesBeforeAttributeSelection() {
 		return originalInstances;
 	}
-	
+
 	public String getEvaluatorDescriptor() {
 		return evaluatorDescriptor;
 	}
-	
+
 	public String getSearcherDescriptor() {
 		return searcherDescriptor;
 	}

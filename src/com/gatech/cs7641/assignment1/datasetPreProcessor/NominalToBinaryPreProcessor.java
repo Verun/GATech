@@ -7,20 +7,20 @@ import weka.filters.unsupervised.attribute.NominalToBinary;
 public class NominalToBinaryPreProcessor implements DatasetPreProcessor {
 
 	@Override
-	public Instances preProcessDataset(Instances instances) {
-		NominalToBinary nominalToBinary = new NominalToBinary();
+	public Instances preProcessDataset(final Instances instances) {
+		final NominalToBinary nominalToBinary = new NominalToBinary();
 		nominalToBinary.setTransformAllValues(true);
 		nominalToBinary.setBinaryAttributesNominal(false);
-		
+
 		try {
 			return Filter.useFilter(instances, nominalToBinary);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
+
 			throw new RuntimeException(e);
 		}
-		
+
 	}
 
 }

@@ -7,19 +7,19 @@ import weka.filters.unsupervised.attribute.Normalize;
 public class NormalizePreProcessor implements DatasetPreProcessor {
 
 	@Override
-	public Instances preProcessDataset(Instances instances) {
+	public Instances preProcessDataset(final Instances instances) {
 
-		Normalize normalizeFilter = new Normalize();
+		final Normalize normalizeFilter = new Normalize();
 
 		try {
 			return Filter.useFilter(instances, normalizeFilter);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
+
 			throw new RuntimeException(e);
 		}
-		
+
 	}
 
 }

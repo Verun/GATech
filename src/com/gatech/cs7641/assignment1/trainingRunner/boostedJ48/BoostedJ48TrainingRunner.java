@@ -17,10 +17,11 @@ import com.google.common.collect.AbstractIterator;
 
 public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 
-	public BoostedJ48TrainingRunner(int randSeed,
-			List<DatasetPreProcessor> preProcessors,
-			AttributeSelector attrSelector, DatasetPartitioner partitioner,
-			Instances trainingSet, Instances testSet) {
+	public BoostedJ48TrainingRunner(final int randSeed,
+			final List<DatasetPreProcessor> preProcessors,
+			final AttributeSelector attrSelector,
+			final DatasetPartitioner partitioner, final Instances trainingSet,
+			final Instances testSet) {
 		super(attrSelector, partitioner, trainingSet, testSet);
 		// TODO Auto-generated constructor stub
 	}
@@ -39,71 +40,82 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 					private int indexIntoSubtreeRaisingArray = 0;
 					private int indexIntoConfidenceFactorsArray = 0;
 					private int indexIntoNumIterationsArray = 0;
-					
-					private final int[] numIterationsArray = new int[] {1,3,5,20}; //too many iterations makes it too slow
-					private final int[] minNumObjArray = new int[] {5,10,25, 50, 100};
-					private final double[] confidenceFactorsArray = new double[] {0.25, 0.10, 0.01};
-					private final boolean[] subTreeRaisingArray = new boolean[] {true, false};
-					
+
+					private final int[] numIterationsArray = new int[] { 1, 3,
+							5, 20 }; // too many iterations makes it too slow
+					private final int[] minNumObjArray = new int[] { 5, 10, 25,
+							50, 100 };
+					private final double[] confidenceFactorsArray = new double[] {
+							0.25, 0.10, 0.01 };
+					private final boolean[] subTreeRaisingArray = new boolean[] {
+							true, false };
+
 					private boolean returnedUnPruned = false;
 					private boolean allClassifiersReturned = false;
-					
+
 					@Override
 					protected ClassifierWithDescriptor computeNext() {
-						
+
 						if (allClassifiersReturned)
 							return endOfData();
-						
-						AdaBoostM1 adaBoost = new AdaBoostM1();
+
+						final AdaBoostM1 adaBoost = new AdaBoostM1();
 						adaBoost.setSeed(GlobalConstants.RAND_SEED);
-						J48 j48 = new J48();
+						final J48 j48 = new J48();
 						String descriptor = null;
-						if (! returnedUnPruned) {
-							
+						if (!returnedUnPruned) {
+
 							j48.setUnpruned(true);
 							returnedUnPruned = true;
 							descriptor = "adaBoost (j48 unPruned)";
 
 						} else {
-						
+
 							j48.setUnpruned(false);
-							
-							boolean subTreeRaisingFlag = getNextSubTreeRaisingFlag();
-							int minNumObj = getNextMinNumObj();
-							double confidenceFactor = getNextConfidenceFactor();
-							int numIterations = getNextNumIterations();
-							
+
+							final boolean subTreeRaisingFlag = getNextSubTreeRaisingFlag();
+							final int minNumObj = getNextMinNumObj();
+							final double confidenceFactor = getNextConfidenceFactor();
+							final int numIterations = getNextNumIterations();
+
 							j48.setSubtreeRaising(subTreeRaisingFlag);
 							j48.setMinNumObj(minNumObj);
-							j48.setConfidenceFactor((float)confidenceFactor);
+							j48.setConfidenceFactor((float) confidenceFactor);
 							adaBoost.setNumIterations(numIterations);
-							
+
 							indexIntoSubtreeRaisingArray++;
-							
-							if (subTreeRaisingFlag == subTreeRaisingArray[subTreeRaisingArray.length - 1] &&
-								minNumObj == minNumObjArray[minNumObjArray.length - 1] &&
-								numIterations == numIterationsArray[numIterationsArray.length - 1] &&
-								Double.compare(confidenceFactor, confidenceFactorsArray[confidenceFactorsArray.length - 1]) == 0)
+
+							if (subTreeRaisingFlag == subTreeRaisingArray[subTreeRaisingArray.length - 1]
+									&& minNumObj == minNumObjArray[minNumObjArray.length - 1]
+									&& numIterations == numIterationsArray[numIterationsArray.length - 1]
+									&& Double
+											.compare(
+													confidenceFactor,
+													confidenceFactorsArray[confidenceFactorsArray.length - 1]) == 0)
 								allClassifiersReturned = true;
-							
-							descriptor="adaBoost (j48 pruned);str=" + subTreeRaisingFlag + ";minNumObj=" + minNumObj + ";numIter=" + numIterations + ";conf=" + confidenceFactor;
+
+							descriptor = "adaBoost (j48 pruned);str="
+									+ subTreeRaisingFlag + ";minNumObj="
+									+ minNumObj + ";numIter=" + numIterations
+									+ ";conf=" + confidenceFactor;
 						}
-						
+
 						adaBoost.setClassifier(j48);
-						
-							long trainingTime;
-							try {
-								long start = System.currentTimeMillis();
-								adaBoost.buildClassifier(trainingInstances);
-								trainingTime = System.currentTimeMillis() - start;
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								
-								throw new RuntimeException(e);
-							}
-							
-							return new ClassifierWithDescriptor(adaBoost, descriptor, trainingInstances, trainingTime);
+
+						long trainingTime;
+						try {
+							final long start = System.currentTimeMillis();
+							adaBoost.buildClassifier(trainingInstances);
+							trainingTime = System.currentTimeMillis() - start;
+						} catch (final Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+
+							throw new RuntimeException(e);
+						}
+
+						return new ClassifierWithDescriptor(adaBoost,
+								descriptor, trainingInstances, trainingTime);
 
 					}
 
@@ -112,7 +124,7 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 							indexIntoNumIterationsArray = 0;
 						}
 						return numIterationsArray[indexIntoNumIterationsArray];
-						
+
 					}
 
 					private double getNextConfidenceFactor() {
@@ -120,11 +132,11 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 							indexIntoConfidenceFactorsArray = 0;
 							indexIntoNumIterationsArray++;
 						}
-						
+
 						return confidenceFactorsArray[indexIntoConfidenceFactorsArray];
-							
+
 					}
-					
+
 					private int getNextMinNumObj() {
 						if (indexIntoMinNumObjArray >= minNumObjArray.length) {
 							indexIntoMinNumObjArray = 0;
@@ -139,14 +151,19 @@ public class BoostedJ48TrainingRunner extends BaseTrainingRunner {
 							indexIntoMinNumObjArray++;
 						}
 						return subTreeRaisingArray[indexIntoSubtreeRaisingArray];
-						
+
 					}
-					
+
 				};
-				
+
 			}
-			
-		};	
+
+		};
+	}
+
+	@Override
+	public String getDescriptor() {
+		return "boostedJ48";
 	}
 
 }

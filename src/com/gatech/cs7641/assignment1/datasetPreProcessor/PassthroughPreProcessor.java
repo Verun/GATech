@@ -5,7 +5,7 @@ import weka.core.Instances;
 public class PassthroughPreProcessor implements DatasetPreProcessor {
 
 	@Override
-	public Instances preProcessDataset(Instances instances) {
+	public Instances preProcessDataset(final Instances instances) {
 		return instances;
 	}
 

@@ -4,5 +4,6 @@ import weka.core.Instances;
 
 public interface AttributeSelector {
 
-	Iterable<AttributeSelectedInstances> getAttributeSelectedInstances(Instances original);
+	Iterable<AttributeSelectedInstances> getAttributeSelectedInstances(
+			Instances original);
 }

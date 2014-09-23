@@ -6,13 +6,13 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class DefaultDatasetLoader implements DatasetLoader {
 
 	@Override
-	public Instances loadDataset(String location) {
+	public Instances loadDataset(final String location) {
 		try {
 			return DataSource.read(location);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
+
 			throw new RuntimeException(e);
 		}
 	}

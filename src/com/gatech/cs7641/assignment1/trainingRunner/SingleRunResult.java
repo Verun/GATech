@@ -10,14 +10,16 @@ public class SingleRunResult {
 	private final Evaluation testEvaluation;
 	private final ClassifierWithDescriptor cwd;
 	private final AttributeSelectedInstances asi;
-	
-	public SingleRunResult(AttributeSelectedInstances asi, Evaluation trainingEvaluation,
-			Evaluation testEvaluation, ClassifierWithDescriptor classifierWithDescriptor) {
+
+	public SingleRunResult(final AttributeSelectedInstances asi,
+			final Evaluation trainingEvaluation,
+			final Evaluation testEvaluation,
+			final ClassifierWithDescriptor classifierWithDescriptor) {
 		super();
 		this.asi = asi;
 		this.trainingEvaluation = trainingEvaluation;
 		this.testEvaluation = testEvaluation;
-		this.cwd = classifierWithDescriptor;
+		cwd = classifierWithDescriptor;
 
 	}
 
@@ -27,14 +29,14 @@ public class SingleRunResult {
 
 	public Evaluation getTestEvaluation() {
 		return testEvaluation;
-	}	
-	
+	}
+
 	public ClassifierWithDescriptor getClassifierWithDescriptor() {
 		return cwd;
 	}
-	
+
 	public AttributeSelectedInstances getAttributeSelectedInstances() {
 		return asi;
 	}
-	
+
 }

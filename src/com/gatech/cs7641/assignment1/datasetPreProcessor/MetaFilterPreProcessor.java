@@ -9,25 +9,23 @@ import weka.filters.MultiFilter;
 public class MetaFilterPreProcessor implements DatasetPreProcessor {
 
 	private final List<Filter> filtersToApply;
-	
-	
-	public MetaFilterPreProcessor(List<Filter> filtersToApply) {
+
+	public MetaFilterPreProcessor(final List<Filter> filtersToApply) {
 		super();
 		this.filtersToApply = filtersToApply;
 	}
 
-
 	@Override
-	public Instances preProcessDataset(Instances instances) {
-		MultiFilter mf = new MultiFilter();
+	public Instances preProcessDataset(final Instances instances) {
+		final MultiFilter mf = new MultiFilter();
 		mf.setFilters(filtersToApply.toArray(new Filter[0]));
 
 		try {
 			return Filter.useFilter(instances, mf);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			
+
 			throw new RuntimeException(e);
 		}
 	}

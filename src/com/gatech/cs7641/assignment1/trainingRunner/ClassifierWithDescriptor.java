@@ -9,8 +9,10 @@ public class ClassifierWithDescriptor {
 	private final String descriptor;
 	private final Instances instancesTrainedOn;
 	private final long timeItTookToTrain;
-	
-	public ClassifierWithDescriptor(Classifier classifier, String descriptor, Instances instancesTrainedOn, long timeItTookToTrain) {
+
+	public ClassifierWithDescriptor(final Classifier classifier,
+			final String descriptor, final Instances instancesTrainedOn,
+			final long timeItTookToTrain) {
 		super();
 		this.classifier = classifier;
 		this.descriptor = descriptor;
@@ -33,7 +35,5 @@ public class ClassifierWithDescriptor {
 	public long getTimeItTookToTrain() {
 		return timeItTookToTrain;
 	}
-	
-	
-	
+
 }
