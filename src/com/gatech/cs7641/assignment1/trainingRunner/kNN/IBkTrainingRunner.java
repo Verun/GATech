@@ -17,8 +17,7 @@ import com.google.common.collect.AbstractIterator;
 
 public class IBkTrainingRunner extends BaseTrainingRunner {
 
-	public IBkTrainingRunner(final int randSeed,
-			final List<DatasetPreProcessor> preProcessors,
+	public IBkTrainingRunner(
 			final AttributeSelector attrSelector,
 			final DatasetPartitioner partitioner, final Instances trainingSet,
 			final Instances testSet) {

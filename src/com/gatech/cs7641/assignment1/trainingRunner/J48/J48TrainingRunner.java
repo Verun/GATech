@@ -15,8 +15,7 @@ import com.google.common.collect.AbstractIterator;
 
 public class J48TrainingRunner extends BaseTrainingRunner {
 
-	public J48TrainingRunner(final int randSeed,
-			final List<DatasetPreProcessor> preProcessors,
+	public J48TrainingRunner(
 			final AttributeSelector attrSelector,
 			final DatasetPartitioner partitioner, final Instances trainingSet,
 			final Instances testSet) {

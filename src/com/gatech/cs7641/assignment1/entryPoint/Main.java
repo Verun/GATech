@@ -29,6 +29,7 @@ import com.gatech.cs7641.assignment1.trainingRunner.TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.J48.J48TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.boostedJ48.BoostedJ48TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.kNN.IBkTrainingRunner;
+import com.gatech.cs7641.assignment1.trainingRunner.multiLayerPerceptron.MultiLayerPerceptronTrainingRunner;
 import com.google.common.collect.Iterables;
 
 public class Main {
@@ -52,24 +53,23 @@ public class Main {
 					+ ", Training set size: " + training.numInstances()
 					+ ", testing set size: " + testing.numInstances());
 
-			// pass through preprocessor
-			final DatasetPreProcessor preProcessor = new PassthroughPreProcessor();
-
 			// partitioner
 			final DatasetPartitioner partitioner = new IncrementalPartitioner(
 					10);
 
 			final TrainingRunner[] trainingRunners = new TrainingRunner[] {
-					new J48TrainingRunner(1, Arrays.asList(preProcessor),
+//					new J48TrainingRunner(
+//							getConfigurableAttributeSelector(), partitioner,
+//							training, testing),
+//					new BoostedJ48TrainingRunner(
+//							getConfigurableAttributeSelector(), partitioner,
+//							training, testing),
+//					new IBkTrainingRunner(
+//							getConfigurableAttributeSelector(), partitioner,
+//							training, testing),
+					new MultiLayerPerceptronTrainingRunner(
 							getConfigurableAttributeSelector(), partitioner,
-							training, testing),
-					new BoostedJ48TrainingRunner(1,
-							Arrays.asList(preProcessor),
-							getConfigurableAttributeSelector(), partitioner,
-							training, testing),
-					new IBkTrainingRunner(1, Arrays.asList(preProcessor),
-							getConfigurableAttributeSelector(), partitioner,
-							training, testing),
+							training, testing)
 
 			};
 
@@ -80,7 +80,7 @@ public class Main {
 				final ResultsDumper rd = new ResultsDumper();
 				final String fileName = trainingAndTestInstances
 						.getDatasetName() + "-" + tr.getDescriptor();
-				rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/"
+				rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Output/"
 						+ fileName + ".txt");
 
 			}
