@@ -2,6 +2,7 @@ package com.gatech.cs7641.assignment1.entryPoint;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ASSearch;
@@ -29,15 +30,25 @@ import com.gatech.cs7641.assignment1.trainingRunner.J48.J48TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.boostedJ48.BoostedJ48TrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.kNN.IBkTrainingRunner;
 import com.gatech.cs7641.assignment1.trainingRunner.multiLayerPerceptron.MultiLayerPerceptronTrainingRunner;
+import com.gatech.cs7641.assignment1.trainingRunner.svm.SVMTrainingRunner;
 import com.google.common.collect.Iterables;
 
 public class Main {
 
-	private static final String ADULT_INCOME_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/adult.data.all.ed_num_removed.arff";
-	private static final String CRIME_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/communities.data.arff";
+	private static String CARS_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/car.data.arff";
+	private static String CRIME_DATA = "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/communities.data.arff";
 
 	public static void main(final String[] args) throws Exception {
 
+		//System.out.println(System.getProperty("java.class.path"));
+		
+		String carsData = args[0];
+		String crimeData = args[1];
+		String outputDir = args[2];
+		CARS_DATA = carsData;
+		CRIME_DATA = crimeData;
+		//String outputDir = "";
+		
 		// load data:
 		final List<TrainingAndTestInstances> theData = getInstances();
 
@@ -57,6 +68,7 @@ public class Main {
 					10);
 
 			final TrainingRunner[] trainingRunners = new TrainingRunner[] {
+					new SVMTrainingRunner(getConfigurableAttributeSelector(), partitioner, training, testing),
 					new J48TrainingRunner(
 							getConfigurableAttributeSelector(), partitioner,
 							training, testing),
@@ -68,18 +80,22 @@ public class Main {
 							training, testing),
 					new MultiLayerPerceptronTrainingRunner(
 							getConfigurableAttributeSelector(), partitioner,
-							training, testing)
+							training, testing),
+
 
 			};
 
 			for (final TrainingRunner tr : trainingRunners) {
 
+//				if (! tr.getDescriptor().equals("SVM") && trainingAndTestInstances.getDatasetName().equals("crime"))
+//					continue;
+				
 				final List<SingleRunResult> evalHolder = tr.runTraining();
 
 				final ResultsDumper rd = new ResultsDumper();
 				final String fileName = trainingAndTestInstances
 						.getDatasetName() + "-" + tr.getDescriptor();
-				rd.dumpResultsToFile(evalHolder, "/Users/vrahimtoola/Desktop/GATech/Assignment 1/Output/"
+				rd.dumpResultsToFile(evalHolder, outputDir + (outputDir.endsWith("/") ? "" : "/") 
 						+ fileName + ".txt");
 
 			}
@@ -109,29 +125,26 @@ public class Main {
 
 	private static List<TrainingAndTestInstances> getInstances()
 			throws Exception {
-		// adult income data
-		final String adultIncomeData = ADULT_INCOME_DATA;
+		// cars data
+		final String carsData = CARS_DATA;
 
-		Instances beforeProcessing = DataSource.read(adultIncomeData);
+		Instances beforeProcessing = DataSource.read(carsData);
 		beforeProcessing.setClassIndex(beforeProcessing.numAttributes() - 1);
 
 		// System.out.println("Before processing, num instances: " +
 		// beforeProcessing.numInstances());
-
-		// normalize numeric values, convert nominal attributes to binary
-		Normalize normalize = new Normalize();
 
 		final NominalToBinary nominalToBinary = new NominalToBinary();
 		nominalToBinary.setTransformAllValues(true);
 		nominalToBinary.setBinaryAttributesNominal(false);
 
 		MultiFilter mf = new MultiFilter();
-		mf.setFilters(new Filter[] { normalize, nominalToBinary });
+		mf.setFilters(new Filter[] { nominalToBinary });
 		mf.setInputFormat(beforeProcessing);
 
 		Instances processed = Filter.useFilter(beforeProcessing, mf);
 
-//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultAll.arff",
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/carsAll.arff",
 //		 processed);
 		
 		Resample resample = new Resample(); // use the supervised version to
@@ -141,10 +154,11 @@ public class Main {
 		resample.setSampleSizePercent(100 - GlobalConstants.HOLDOUT_PERCENTAGE);
 		resample.setInputFormat(processed);
 
-		final Instances adultTraining = Filter.useFilter(processed, resample);
+		final Instances carsTraining = Filter.useFilter(processed, resample);
+		carsTraining.randomize(new Random(GlobalConstants.RAND_SEED));
 
-//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultTrain.arff",
-//		 adultTraining);
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/carsTrain.arff",
+//		 carsTraining);
 
 		resample = new Resample(); // use the supervised version to maintain the
 									// class distribution
@@ -154,10 +168,10 @@ public class Main {
 		resample.setInvertSelection(true);
 		resample.setInputFormat(processed);
 
-		final Instances adultTesting = Filter.useFilter(processed, resample);
+		final Instances carsTesting = Filter.useFilter(processed, resample);
 
-//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/adultTest.arff",
-//		 adultTesting);
+//		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/carsTest.arff",
+//		 carsTesting);
 		
 		// ////////////////////////////////
 		final String crimeData = CRIME_DATA;
@@ -183,7 +197,7 @@ public class Main {
 		numericToNominal.setAttributeIndicesArray(new int[] { 0 });
 
 		// normalize all numeric attributes
-		normalize = new Normalize();
+		Normalize normalize = new Normalize();
 
 		mf = new MultiFilter();
 		mf.setFilters(new Filter[] { discretize, numericToNominal, normalize });
@@ -207,6 +221,7 @@ public class Main {
 		resample.setInputFormat(processed);
 
 		final Instances crimeTraining = Filter.useFilter(processed, resample);
+		crimeTraining.randomize(new Random(GlobalConstants.RAND_SEED));
 
 //		 DataSink.write("/Users/vrahimtoola/Desktop/GATech/Assignment 1/Data/JavaInputs/crimeTrain.arff",
 //		 crimeTraining);
@@ -225,10 +240,12 @@ public class Main {
 //		 crimeTesting);
 		
 		return Arrays
-				.asList(new TrainingAndTestInstances[] { new TrainingAndTestInstances(
-						"crime", crimeTraining, crimeTesting),
-				 new TrainingAndTestInstances("adult", adultTraining,
-				 adultTesting),
+				.asList(new TrainingAndTestInstances[] { 
+
+				 new TrainingAndTestInstances("cars", carsTraining,
+				 carsTesting),
+					new TrainingAndTestInstances(
+					"crime", crimeTraining, crimeTesting),
 
 				});
 
